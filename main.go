@@ -19,7 +19,7 @@ const (
     // COMPLEXITY = 10
     // COLORFACTOR = 40
     dist_amp = 50.0
-	dist_freq = 0.02
+	dist_freq = 0.01
 	dist_phase = 0.0
 )
 
@@ -37,13 +37,18 @@ func savePng(fname string, newPng *image.RGBA) {
 }
 
 func getPixelColor(x,y int, complexity,colorfactor float64) (uint8, uint8, uint8) {
-    // angle := math.Pi * SCALE * float64(y-x) // Change to +/-/* or divide/modulus by x+1 or y+1
-    angle := math.Pi * SCALE * math.Tan(float64(x+(y/((x*y)+1))) - math.Sin(float64(x*y)*0.1))
-	distance := math.Sqrt(math.Pow(float64(x-WIDTH/2), 2) + math.Pow(float64(y-HEIGHT/2), 2))
+    angle := math.Pi * SCALE * (float64(y-x)-math.Sin(float64(x*y))) // Change to +/-/* or divide/modulus by x+1 or y+1
+    // angle := math.Pi * SCALE * math.Tan(x+y)*0.2)
+    // angle := math.Pi * SCALE * math.Tan(float64(x+(y/((x*y)+1))) - math.Sin(float64(x*y)*0.1))
+    // angle := math.Pi * SCALE * math.Sin(float64(x-y)*0.1)/math.Exp(float64(x-y))
+    distance := math.Sqrt(math.Pow(float64(x-WIDTH/2), 2) + math.Pow(float64(y-HEIGHT/2), 2))
 	frequency := distance * SCALE
     r := uint8(math.Sin(angle * complexity + frequency) * colorfactor + 128)
+    // r := uint8(0)
 	g := uint8(math.Sin(angle * complexity + frequency + 2*math.Pi/3) * colorfactor + 128)
-	b := uint8(math.Sin(angle * complexity + frequency + 4*math.Pi/3) * colorfactor + 128)
+	// g := uint8(0)
+    b := uint8(math.Sin(angle * complexity + frequency + 4*math.Pi/3) * colorfactor + 128)
+    // b := uint8(0)
     return r, g, b
 }
 
@@ -59,9 +64,9 @@ func clamp(value, min, max int) int {
 
 func distort(x, y int) (int, int) {
     // dx := x + int(dist_amp * math.Sin(dist_freq * float64(x) + dist_phase))
-	dx := x + int(dist_amp * math.Sin(dist_freq * float64(x+y) + dist_phase))
+	dx := x + int(dist_amp * math.Sin(dist_freq * float64(x) + dist_phase))
     // dy := x + int(dist_amp * math.Sin(dist_freq * float64(y) + dist_phase))
-	dy := y + int(dist_amp * math.Sin(dist_freq * float64(x-y) + dist_phase))
+	dy := y + int(dist_amp * math.Sin(dist_freq * float64(y) + dist_phase))
 	dx = clamp(dx, 0, WIDTH-1)
 	dy = clamp(dy, 0, HEIGHT-1)
     return dx, dy
@@ -83,10 +88,10 @@ func runFfmpeg() {
     ffmpegCmd := exec.Command(
         "ffmpeg", "-y",
         "-framerate", "80",
-        "-i", "png_out/trial9/trial9_%d.png",
+        "-i", "png_out/trial18/trial18_%d.png",
         "-c:v", "libx264",
         "-pix_fmt", "yuv420p",
-        "vid_out/trial9.mp4",
+        "vid_out/trial18.mp4",
     )
     cmdOutput, err := ffmpegCmd.CombinedOutput()
     if err != nil {
@@ -98,10 +103,10 @@ func runFfmpeg() {
 }
 
 func main() {
-    multiplier := 10.0
-    for i := 1; i < 41; i++ {
-        fnameInc := "png_out/trial9/trial9_"+strconv.FormatInt(int64(i-1), 10)+".png"
-        fnameDec := "png_out/trial9/trial9_"+strconv.FormatInt(int64(79-(i-1)), 10)+".png"
+    multiplier := 2.0
+    for i := 1; i < 81; i++ {
+        fnameInc := "png_out/trial18/trial18_"+strconv.FormatInt(int64(i-1), 10)+".png"
+        fnameDec := "png_out/trial18/trial18_"+strconv.FormatInt(int64(159-(i-1)), 10)+".png"
         generatePng(fnameInc, float64(multiplier*float64(i)), float64(2*i-1))
         generatePng(fnameDec, float64(multiplier*float64(i)), float64(2*i-1))
     }
