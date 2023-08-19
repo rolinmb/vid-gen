@@ -1,0 +1,1 @@
+Creating .mp4 videos using ffmpeg and .png frames generated from a go scrip
