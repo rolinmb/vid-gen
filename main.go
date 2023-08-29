@@ -13,8 +13,8 @@ import (
 )
 
 const (
-    WIDTH = 1500
-    HEIGHT = 1500
+    WIDTH = 1600
+    HEIGHT = 1600
     SCALE = 0.001
     // COMPLEXITY = 10
     // COLORFACTOR = 40
@@ -37,10 +37,20 @@ func savePng(fname string, newPng *image.RGBA) {
 }
 
 func getPixelColor(x,y int, complexity,colorfactor float64) (uint8, uint8, uint8) {
-    angle := math.Pi * SCALE * (float64(y-x)-math.Sin(float64(x*y))) // Change to +/-/* or divide/modulus by x+1 or y+1
-    // angle := math.Pi * SCALE * math.Tan(x+y)*0.2)
+    // angle := math.Pi * SCALE * math.Sin(float64(x*y/2)) // Change to +/-/* or divide/modulus by x+1 or y+1
+    // angle := math.Pi * SCALE * (math.Cos(float64(x+y))*0.2)
     // angle := math.Pi * SCALE * math.Tan(float64(x+(y/((x*y)+1))) - math.Sin(float64(x*y)*0.1))
-    // angle := math.Pi * SCALE * math.Sin(float64(x-y)*0.1)/math.Exp(float64(x-y))
+    // angle := math.Pi * 2.0 * SCALE *  math.Sqrt(float64(x*x+y*y)) // circular gradient
+    // angle := math.Pi * SCALE * math.Sin(float64(x)*0.1) + math.Pi * SCALE * math.Sin(float64(y)*0.1) // sine wave ripple
+    // angle := math.Pi * SCALE * (1 / (float64(x)*float64(x) + float64(y)*float64(y) + 1))  // hyperbolic spiral
+    // angle := math.Pi * SCALE * float64(x*x+y*y)  // square
+    // angle := math.Pi * SCALE * math.Exp(-0.01 * math.Sqrt(float64(x*x+y*y)))  // exponential decay
+    // angle := math.Pi * SCALE * math.Sin(0.1*float64(x)+0.1*float64(y)) + math.Pi/4  // offset sine wave
+    // angle := math.Pi * SCALE * math.Sin(3*float64(x)) + math.Pi * SCALE * math.Sin(4*float64(y))  // lissajous curve
+    // angle := math.Pi * SCALE * math.Cos(3*float64(x*y)) + math.Pi * SCALE * math.Sin(4*float64(y))
+    // angle := math.Pi * SCALE * math.Abs(float64(x)-WIDTH/2) + math.Pi * SCALE * math.Abs(float64(y)-HEIGHT/2) // diamond
+    // angle := math.Pi * SCALE * (float64(x)/10 + float64(y)/5) + math.Pi * SCALE * math.Sin(2*float64(x))  // hypotochoid
+    angle := math.Pi * SCALE * (math.Sin(float64(x)*0.05) * math.Exp(-float64(y)*0.1))
     distance := math.Sqrt(math.Pow(float64(x-WIDTH/2), 2) + math.Pow(float64(y-HEIGHT/2), 2))
 	frequency := distance * SCALE
     r := uint8(math.Sin(angle * complexity + frequency) * colorfactor + 128)
@@ -88,10 +98,10 @@ func runFfmpeg() {
     ffmpegCmd := exec.Command(
         "ffmpeg", "-y",
         "-framerate", "80",
-        "-i", "png_out/trial18/trial18_%d.png",
+        "-i", "png_out/trial21/trial21_08282023_%d.png",
         "-c:v", "libx264",
         "-pix_fmt", "yuv420p",
-        "vid_out/trial18.mp4",
+        "vid_out/trial21_08282023.mp4",
     )
     cmdOutput, err := ffmpegCmd.CombinedOutput()
     if err != nil {
@@ -105,8 +115,8 @@ func runFfmpeg() {
 func main() {
     multiplier := 2.0
     for i := 1; i < 81; i++ {
-        fnameInc := "png_out/trial18/trial18_"+strconv.FormatInt(int64(i-1), 10)+".png"
-        fnameDec := "png_out/trial18/trial18_"+strconv.FormatInt(int64(159-(i-1)), 10)+".png"
+        fnameInc := "png_out/trial21/trial21_08282023_"+strconv.FormatInt(int64(i-1), 10)+".png"
+        fnameDec := "png_out/trial21/trial21_08282023_"+strconv.FormatInt(int64(159-(i-1)), 10)+".png"
         generatePng(fnameInc, float64(multiplier*float64(i)), float64(2*i-1))
         generatePng(fnameDec, float64(multiplier*float64(i)), float64(2*i-1))
     }
